@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard CX & Loyalty · BIA Restaurants 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#f8fafc;color:#0a0a0a;padding:24px}
+  .db{max-width:1300px;margin:0 auto;background:#fff;border-radius:14px;padding:28px;border:1px solid #e2e8f0}
+  .hdr{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:24px;padding-bottom:16px;border-bottom:3px solid #0F6E56}
+  .hdr-tag{font-size:11px;font-weight:700;color:#0F6E56;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
+  .hdr-title{font-size:22px;font-weight:700;color:#0a0a0a}
+  .hdr-sub{font-size:12px;color:#64748b;margin-top:2px}
+  .ctrl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .sel{font-size:12px;padding:6px 11px;border-radius:7px;border:1px solid #cbd5e1;background:#fff;color:#0a0a0a;cursor:pointer}
+  .save-badge{font-size:11px;color:#16a34a;background:#dcfce7;padding:4px 10px;border-radius:20px;font-weight:600}
+  .kgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:22px}
+  .kc{background:#f8fafc;border-radius:9px;padding:13px 11px;position:relative;overflow:hidden;border:1px solid #f1f5f9}
+  .kc-acc{position:absolute;top:0;left:0;width:4px;height:100%;border-radius:2px 0 0 2px}
+  .kc-lbl{font-size:11px;color:#64748b;margin-bottom:5px;line-height:1.35;padding-left:8px}
+  .kc-val{font-size:24px;font-weight:700;padding-left:8px}
+  .kc-sub{font-size:10px;color:#94a3b8;margin-top:2px;padding-left:8px}
+  .kc-delta{font-size:11px;font-weight:700;margin-top:4px;padding-left:8px}
+  .sec-title{font-size:13px;font-weight:700;color:#0a0a0a;margin-bottom:11px}
+  .charts2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px}
+  .charts3{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:14px;margin-bottom:22px}
+  .cbox{background:#fff;border:1px solid #e2e8f0;border-radius:11px;padding:15px}
+  .brand-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
+  .bcard{background:#fff;border:1px solid #e2e8f0;border-radius:11px;padding:14px}
+  .bcard-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+  .bname{font-size:13px;font-weight:700;color:#0a0a0a}
+  .bstat-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .bstat-lbl{font-size:11px;color:#64748b}
+  .bstat-val{font-size:12px;font-weight:700}
+  .bprog{height:6px;border-radius:3px;background:#e2e8f0;overflow:hidden;margin:5px 0}
+  .bprog-fill{height:100%;border-radius:3px;transition:width .35s}
+  .brand-edit{font-size:10px;color:#0F6E56;cursor:pointer;background:none;border:1px solid #a7f3d0;border-radius:5px;padding:2px 7px}
+  .brand-edit:hover{background:#f0fdf4}
+  .daily-box{background:#fff;border:1px solid #e2e8f0;border-radius:11px;padding:15px;margin-bottom:14px}
+  table{width:100%;border-collapse:collapse;font-size:11px}
+  th{text-align:left;padding:7px 9px;background:#f8fafc;color:#64748b;font-weight:700;font-size:10px;border-bottom:1px solid #e2e8f0}
+  td{padding:7px 9px;border-bottom:1px solid #f8fafc;color:#0a0a0a;vertical-align:middle}
+  tr:last-child td{border:none}
+  tr:hover td{background:#fafbfc}
+  .add-btn{font-size:12px;color:#0F6E56;cursor:pointer;background:#f0fdf4;border:1px solid #a7f3d0;border-radius:7px;padding:6px 14px;margin-top:10px}
+  .add-btn:hover{background:#dcfce7}
+  .pill{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;white-space:nowrap}
+  /* Modal */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:100;align-items:center;justify-content:center}
+  .modal-overlay.show{display:flex}
+  .modal{background:#fff;border-radius:13px;border:1px solid #e2e8f0;padding:22px;width:500px;max-width:96vw;max-height:92vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.12)}
+  .mt{font-size:15px;font-weight:700;color:#0a0a0a;margin-bottom:4px}
+  .msub{font-size:11px;color:#64748b;margin-bottom:14px}
+  .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}
+  .fgrid.full{grid-template-columns:1fr}
+  .fl{font-size:11px;color:#64748b;margin-bottom:3px;font-weight:600}
+  .fi{width:100%;font-size:12px;padding:6px 9px;border-radius:7px;border:1px solid #cbd5e1;background:#f8fafc;color:#0a0a0a}
+  .fi:focus{outline:none;border-color:#0F6E56}
+  .mac{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;align-items:center}
+  .bc{font-size:12px;padding:6px 14px;border-radius:7px;border:1px solid #e2e8f0;background:none;color:#64748b;cursor:pointer}
+  .bs{font-size:12px;padding:6px 14px;border-radius:7px;border:none;background:#0F6E56;color:#fff;cursor:pointer;font-weight:600}
+  .bs:hover{background:#085041}
+  .bdel{font-size:12px;padding:6px 14px;border-radius:7px;border:1px solid #fca5a5;background:none;color:#dc2626;cursor:pointer;margin-right:auto}
+  .leg-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;font-size:11px;color:#64748b}
+  .leg-item{display:flex;align-items:center;gap:4px}
+  .leg-sq{width:10px;height:10px;border-radius:2px;display:inline-block}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0}
+  footer{text-align:center;font-size:11px;color:#94a3b8;margin-top:18px;padding-top:14px;border-top:1px solid #f1f5f9}
+</style>
+</head>
+<body>
+<div class="db">
+  <div class="hdr">
+    <div>
+      <div class="hdr-tag">Customer Experience & Loyalty · BIA Restaurants</div>
+      <div class="hdr-title">Dashboard de KPIs 2026</div>
+      <div class="hdr-sub">Seguimiento mensual y diario · NPS · Lealtad · Adopción operacional</div>
+    </div>
+    <div class="ctrl">
+      <span class="save-badge" id="saveBadge">✓ Datos guardados</span>
+      <select class="sel" id="cxMonth" onchange="renderCX()">
+        <option>Enero</option><option>Febrero</option><option>Marzo</option>
+        <option selected>Abril</option><option>Mayo</option><option>Junio</option>
+        <option>Julio</option><option>Agosto</option><option>Septiembre</option>
+        <option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+      </select>
+      <select class="sel" id="cxYear" onchange="renderCX()"><option>2026</option><option>2027</option></select>
+      <button class="add-btn" style="margin:0;background:#fff8f8;border-color:#fca5a5;color:#dc2626" onclick="resetData()">↺ Limpiar datos</button>
+    </div>
+  </div>
+
+  <div class="kgrid" id="cxKpis"></div>
+
+  <div class="charts2">
+    <div class="cbox">
+      <div class="sec-title">NPS por marca</div>
+      <div style="position:relative;height:220px"><canvas id="cNPS" role="img" aria-label="Barras de NPS por marca">NPS por marca.</canvas></div>
+      <div class="leg-row"><div class="leg-item"><span class="leg-sq" style="background:#94a3b8;opacity:.4;border:1px dashed #94a3b8"></span>Meta NPS (45)</div></div>
+    </div>
+    <div class="cbox">
+      <div class="sec-title">Tendencia usuarios activos loyalty</div>
+      <div style="position:relative;height:220px"><canvas id="cTrend" role="img" aria-label="Línea de usuarios activos por mes">Tendencia.</canvas></div>
+    </div>
+  </div>
+
+  <div class="charts3">
+    <div class="cbox">
+      <div class="sec-title">Retención real vs meta por marca</div>
+      <div style="position:relative;height:210px"><canvas id="cRet" role="img" aria-label="Barras de retención real vs meta">Retención.</canvas></div>
+    </div>
+    <div class="cbox">
+      <div class="sec-title">Estado campañas personalizadas</div>
+      <div style="position:relative;height:165px"><canvas id="cCamp" role="img" aria-label="Donut estado campañas">Campañas.</canvas></div>
+      <div class="leg-row" id="legCamp"></div>
+    </div>
+    <div class="cbox">
+      <div class="sec-title">Adopción operacional de lineamientos</div>
+      <div id="cAdopWrap" style="position:relative;height:210px"><canvas id="cAdop" role="img" aria-label="Barras horizontales de adopción operacional">Adopción.</canvas></div>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+    <div class="sec-title" style="margin:0">Seguimiento por marca</div>
+    <div style="display:flex;gap:8px">
+      <button class="add-btn" style="margin:0" onclick="openCampModal()">✎ Editar campañas</button>
+      <button class="add-btn" style="margin:0" onclick="openTrendModal()">+ Agregar mes a tendencia</button>
+    </div>
+  </div>
+  <div class="brand-grid" id="brandCards"></div>
+
+  <div class="daily-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <div class="sec-title" style="margin:0">Registro diario de métricas</div>
+      <button class="add-btn" style="margin:0" onclick="openDailyModal()">+ Ingresar registro del día</button>
+    </div>
+    <table>
+      <thead><tr><th>Fecha</th><th>Marca</th><th>Métrica</th><th>Valor</th><th>Nota</th><th></th></tr></thead>
+      <tbody id="dailyBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalInner"></div>
+</div>
+
+<footer>Dashboard CX & Loyalty · BIA Restaurants 2026 · Los datos se guardan automáticamente en este dispositivo</footer>
+
+<script>
+const STORAGE_KEY = 'bia_cx_2026';
+const BRANDS_CX = ['Café Barista','Panda Express',"Applebee's",'Punta del Cielo'];
+const BCOL = {'Café Barista':'#B5651D','Panda Express':'#C8102E',"Applebee's":'#2E8B57','Punta del Cielo':'#6A0DAD'};
+const METRICS_LIST = ['Usuarios enrolados hoy','NPS diario (encuesta)','Redenciones del día','Tickets con loyalty activo','Quejas / reclamos','Encuestas de satisfacción completadas','Tiempo respuesta RRSS (min)','Otra métrica'];
+
+const DEFAULT_BRANDS = {
+  'Café Barista':    {nps:42,retencion:68,frecuencia:2.3,activos:18400,meta_activos:20000,redemption:34,adopcion:85,meta_ret:75},
+  'Panda Express':   {nps:38,retencion:55,frecuencia:1.8,activos:62000,meta_activos:100000,redemption:28,adopcion:72,meta_ret:70},
+  "Applebee's":      {nps:45,retencion:60,frecuencia:1.5,activos:8200,meta_activos:10000,redemption:41,adopcion:90,meta_ret:70},
+  'Punta del Cielo': {nps:35,retencion:48,frecuencia:3.1,activos:5100,meta_activos:8000,redemption:22,adopcion:60,meta_ret:65},
+};
+const DEFAULT_TREND = [
+  {mes:'Ene',activos:82000},{mes:'Feb',activos:86000},{mes:'Mar',activos:90000},{mes:'Abr',activos:93700},
+];
+const DEFAULT_CAMPANAS = {activas:3,planificadas:4,completadas:5,pausadas:1};
+const DEFAULT_DAILY = [
+  {id:1,fecha:'2026-04-14',marca:'Panda Express',metrica:'Usuarios enrolados hoy',valor:'142',nota:'Campaña push activa'},
+  {id:2,fecha:'2026-04-15',marca:"Applebee's",metrica:'Redenciones del día',valor:'87',nota:'Lunes festivo'},
+];
+
+function loadData() {
+  try { const r=localStorage.getItem(STORAGE_KEY); if(r) return JSON.parse(r); } catch(e){}
+  return {
+    brands: JSON.parse(JSON.stringify(DEFAULT_BRANDS)),
+    trend: JSON.parse(JSON.stringify(DEFAULT_TREND)),
+    campanas: {...DEFAULT_CAMPANAS},
+    daily: JSON.parse(JSON.stringify(DEFAULT_DAILY)),
+    nextDailyId: 3,
+  };
+}
+function saveData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({brands:BD,trend:TREND,campanas:CAMP,daily:DAILY,nextDailyId}));
+    const b=document.getElementById('saveBadge');
+    b.textContent='✓ Guardado '+new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
+    b.style.background='#dcfce7'; b.style.color='#16a34a';
+  } catch(e){}
+}
+function resetData() {
+  if(!confirm('¿Limpiar todos los datos y volver a los datos de ejemplo?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  const d=loadData(); BD=d.brands; TREND=d.trend; CAMP=d.campanas; DAILY=d.daily; nextDailyId=d.nextDailyId;
+  renderCX();
+}
+
+let state=loadData(), BD=state.brands, TREND=state.trend, CAMP=state.campanas, DAILY=state.daily, nextDailyId=state.nextDailyId;
+let charts={};
+
+function totalActivos(){return Object.values(BD).reduce((s,b)=>s+b.activos,0);}
+function avgNPS(){const v=Object.values(BD);return Math.round(v.reduce((s,b)=>s+b.nps,0)/v.length);}
+function avgRet(){const v=Object.values(BD);return Math.round(v.reduce((s,b)=>s+b.retencion,0)/v.length);}
+function avgRed(){const v=Object.values(BD);return Math.round(v.reduce((s,b)=>s+b.redemption,0)/v.length);}
+function avgAdop(){const v=Object.values(BD);return Math.round(v.reduce((s,b)=>s+b.adopcion,0)/v.length);}
+
+function renderKpis(){
+  const kpis=[
+    {lbl:'Usuarios activos loyalty',val:totalActivos().toLocaleString('es'),sub:'todas las marcas',acc:'#0F6E56',delta:'Meta: '+Object.values(BD).reduce((s,b)=>s+b.meta_activos,0).toLocaleString('es')},
+    {lbl:'NPS promedio del grupo',val:avgNPS(),sub:'Net Promoter Score',acc:'#2563eb',delta:'Meta: ≥ 45'},
+    {lbl:'Retención promedio',val:avgRet()+'%',sub:'clientes recurrentes',acc:'#7c3aed',delta:'Meta: ≥ 70%'},
+    {lbl:'Tasa de redención',val:avgRed()+'%',sub:'beneficios canjeados',acc:'#d97706',delta:'Meta: ≥ 40%'},
+    {lbl:'Adopción operacional',val:avgAdop()+'%',sub:'lineamientos de CX',acc:'#0891b2',delta:'Meta: ≥ 90%'},
+  ];
+  document.getElementById('cxKpis').innerHTML=kpis.map(k=>`
+    <div class="kc"><div class="kc-acc" style="background:${k.acc}"></div>
+    <div class="kc-lbl">${k.lbl}</div>
+    <div class="kc-val" style="color:${k.acc}">${k.val}</div>
+    <div class="kc-sub">${k.sub}</div>
+    <div class="kc-delta" style="color:${k.acc}">${k.delta}</div></div>`).join('');
+}
+
+function renderCharts(){
+  Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});
+  charts={};
+  const bL=BRANDS_CX, bS=bL.map(b=>b.length>10?b.slice(0,10)+'…':b);
+
+  charts.nps=new Chart(document.getElementById('cNPS'),{
+    type:'bar',
+    data:{labels:bS,datasets:[
+      {label:'NPS',data:bL.map(b=>BD[b].nps),backgroundColor:bL.map(b=>BCOL[b]),borderRadius:5},
+      {label:'Meta',data:bL.map(()=>45),type:'line',borderColor:'#94a3b8',borderDash:[4,3],pointRadius:0,borderWidth:1.5,tension:0}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{font:{size:9},color:'#94a3b8'},grid:{display:false}},
+              y:{min:0,max:70,ticks:{font:{size:9},color:'#94a3b8'},grid:{color:'#f1f5f9'}}}}
+  });
+
+  charts.trend=new Chart(document.getElementById('cTrend'),{
+    type:'line',
+    data:{labels:TREND.map(t=>t.mes),datasets:[{
+      label:'Usuarios',data:TREND.map(t=>t.activos),
+      borderColor:'#0F6E56',backgroundColor:'#0F6E5612',borderWidth:2.5,
+      pointRadius:5,pointBackgroundColor:'#0F6E56',tension:.4,fill:true
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{font:{size:9},color:'#94a3b8'},grid:{display:false}},
+              y:{ticks:{callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v,font:{size:9},color:'#94a3b8'},grid:{color:'#f1f5f9'}}}}
+  });
+
+  charts.ret=new Chart(document.getElementById('cRet'),{
+    type:'bar',
+    data:{labels:bS,datasets:[
+      {label:'Real',data:bL.map(b=>BD[b].retencion),backgroundColor:bL.map(b=>BCOL[b]),borderRadius:4},
+      {label:'Meta',data:bL.map(b=>BD[b].meta_ret),backgroundColor:'#e2e8f0',borderRadius:4},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{font:{size:9},color:'#94a3b8'},grid:{display:false}},
+              y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{size:9},color:'#94a3b8'},grid:{color:'#f1f5f9'}}}}
+  });
+  document.getElementById('cRet').parentElement.previousElementSibling.innerHTML=
+    '<div style="display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:#64748b;margin-bottom:8px">'
+    +'<div style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#B5651D"></span>Real</div>'
+    +'<div style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#e2e8f0;border:1px solid #cbd5e1"></span>Meta</div>'
+    +'</div>';
+
+  const cL=['Activas','Planificadas','Completadas','Pausadas'];
+  const cV=[CAMP.activas,CAMP.planificadas,CAMP.completadas,CAMP.pausadas];
+  const cC=['#0F6E56','#2563eb','#16a34a','#94a3b8'];
+  charts.camp=new Chart(document.getElementById('cCamp'),{
+    type:'doughnut',
+    data:{labels:cL,datasets:[{data:cV,backgroundColor:cC,borderWidth:2,borderColor:'#fff',hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false}}}
+  });
+  document.getElementById('legCamp').innerHTML=cL.map((l,i)=>
+    `<div class="leg-item"><span class="leg-sq" style="background:${cC[i]}"></span>${l}: <b>${cV[i]}</b></div>`
+  ).join('');
+
+  const adH=BRANDS_CX.length*42+60;
+  document.getElementById('cAdopWrap').style.height=adH+'px';
+  charts.adop=new Chart(document.getElementById('cAdop'),{
+    type:'bar',
+    data:{labels:bL.map(b=>b.length>13?b.slice(0,13)+'…':b),datasets:[
+      {label:'Adopción',data:bL.map(b=>BD[b].adopcion),backgroundColor:bL.map(b=>BCOL[b]),borderRadius:4},
+      {label:'Meta (90%)',data:bL.map(()=>90),backgroundColor:'#e2e8f030',borderWidth:1,borderColor:'#94a3b8',borderRadius:4}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},
+      scales:{x:{min:0,max:100,ticks:{callback:v=>v+'%',font:{size:9},color:'#94a3b8'},grid:{color:'#f1f5f9'}},
+              y:{ticks:{font:{size:9},color:'#64748b'},grid:{display:false}}}}
+  });
+}
+
+function renderBrandCards(){
+  document.getElementById('brandCards').innerHTML=BRANDS_CX.map((b,bi)=>{
+    const d=BD[b], clr=BCOL[b];
+    const pct=d.meta_activos?Math.min(100,Math.round(d.activos/d.meta_activos*100)):0;
+    const npsC=d.nps>=45?'#16a34a':d.nps>=35?'#d97706':'#dc2626';
+    const adC=d.adopcion>=90?'#16a34a':d.adopcion>=70?'#d97706':'#dc2626';
+    return `<div class="bcard">
+      <div class="bcard-hdr">
+        <div class="bname" style="color:${clr}">${b}</div>
+        <button class="brand-edit" onclick="openBrandModal(${bi})">✎ Editar</button>
+      </div>
+      <div class="bstat-row"><span class="bstat-lbl">NPS</span><span class="bstat-val" style="color:${npsC}">${d.nps} <small style="font-weight:400;color:#94a3b8">/ meta 45</small></span></div>
+      <div class="bstat-row"><span class="bstat-lbl">Retención</span><span class="bstat-val">${d.retencion}% <small style="font-weight:400;color:#94a3b8">/ meta ${d.meta_ret}%</small></span></div>
+      <div class="bstat-row"><span class="bstat-lbl">Frecuencia</span><span class="bstat-val">${d.frecuencia} vis/mes</span></div>
+      <div class="bstat-row"><span class="bstat-lbl">Tasa redención</span><span class="bstat-val">${d.redemption}%</span></div>
+      <div style="margin:8px 0 4px;font-size:10px;color:#64748b">Usuarios loyalty: <b style="color:#0a0a0a">${d.activos.toLocaleString('es')}</b> / ${d.meta_activos.toLocaleString('es')}</div>
+      <div class="bprog"><div class="bprog-fill" style="width:${pct}%;background:${clr}"></div></div>
+      <div style="font-size:10px;color:#94a3b8;margin-bottom:6px">${pct}% de meta annual</div>
+      <div style="font-size:11px">Adopción operacional: <span style="font-weight:700;color:${adC}">${d.adopcion}%</span></div>
+    </div>`;
+  }).join('');
+}
+
+function renderDaily(){
+  document.getElementById('dailyBody').innerHTML=[...DAILY].reverse().map(r=>
+    `<tr>
+      <td>${r.fecha}</td>
+      <td><span class="pill" style="background:${BCOL[r.marca]||'#0F4C81'}22;color:${BCOL[r.marca]||'#0F4C81'}">${r.marca}</span></td>
+      <td>${r.metrica}</td>
+      <td style="font-weight:700">${r.valor}</td>
+      <td style="color:#64748b">${r.nota||'—'}</td>
+      <td><button style="font-size:10px;color:#dc2626;background:none;border:none;cursor:pointer" onclick="delDaily(${r.id})">✕</button></td>
+    </tr>`
+  ).join('');
+}
+
+function renderCX(){renderKpis();renderCharts();renderBrandCards();renderDaily();}
+
+function openBrandModal(idx){
+  const brand=BRANDS_CX[idx];
+  window._editingBrand=brand;
+  const d=BD[brand];
+  document.getElementById('modalInner').innerHTML=`
+    <div class="mt">Editar datos — ${brand}</div>
+    <div class="msub">Actualiza las métricas del mes seleccionado</div>
+    <div class="fgrid">
+      <div><div class="fl">NPS actual</div><input class="fi" id="b_nps" type="number" value="${d.nps}" min="-100" max="100"></div>
+      <div><div class="fl">Retención (%)</div><input class="fi" id="b_ret" type="number" value="${d.retencion}" min="0" max="100"></div>
+    </div>
+    <div class="fgrid">
+      <div><div class="fl">Meta retención (%)</div><input class="fi" id="b_mret" type="number" value="${d.meta_ret}" min="0" max="100"></div>
+      <div><div class="fl">Frecuencia (vis/mes)</div><input class="fi" id="b_frec" type="number" value="${d.frecuencia}" step="0.1" min="0"></div>
+    </div>
+    <div class="fgrid">
+      <div><div class="fl">Usuarios activos loyalty</div><input class="fi" id="b_act" type="number" value="${d.activos}" min="0"></div>
+      <div><div class="fl">Meta usuarios loyalty</div><input class="fi" id="b_mact" type="number" value="${d.meta_activos}" min="0"></div>
+    </div>
+    <div class="fgrid">
+      <div><div class="fl">Tasa de redención (%)</div><input class="fi" id="b_red" type="number" value="${d.redemption}" min="0" max="100"></div>
+      <div><div class="fl">Adopción operacional (%)</div><input class="fi" id="b_adop" type="number" value="${d.adopcion}" min="0" max="100"></div>
+    </div>
+    <div class="mac">
+      <button class="bc" onclick="closeModal()">Cancelar</button>
+      <button class="bs" onclick="saveBrand()">Guardar</button>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function saveBrand(){
+  const brand=window._editingBrand;
+  BD[brand]={
+    nps:+document.getElementById('b_nps').value||0,
+    retencion:+document.getElementById('b_ret').value||0,
+    meta_ret:+document.getElementById('b_mret').value||0,
+    frecuencia:+document.getElementById('b_frec').value||0,
+    activos:+document.getElementById('b_act').value||0,
+    meta_activos:+document.getElementById('b_mact').value||0,
+    redemption:+document.getElementById('b_red').value||0,
+    adopcion:+document.getElementById('b_adop').value||0,
+  };
+  closeModal(); saveData(); renderCX();
+}
+
+function openCampModal(){
+  document.getElementById('modalInner').innerHTML=`
+    <div class="mt">Editar estado de campañas</div>
+    <div class="msub">Actualiza el número de campañas personalizadas por estado</div>
+    <div class="fgrid">
+      <div><div class="fl">Activas</div><input class="fi" id="c_a" type="number" value="${CAMP.activas}" min="0"></div>
+      <div><div class="fl">Planificadas</div><input class="fi" id="c_p" type="number" value="${CAMP.planificadas}" min="0"></div>
+    </div>
+    <div class="fgrid">
+      <div><div class="fl">Completadas</div><input class="fi" id="c_c" type="number" value="${CAMP.completadas}" min="0"></div>
+      <div><div class="fl">Pausadas</div><input class="fi" id="c_u" type="number" value="${CAMP.pausadas}" min="0"></div>
+    </div>
+    <div class="mac">
+      <button class="bc" onclick="closeModal()">Cancelar</button>
+      <button class="bs" onclick="saveCamp()">Guardar</button>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function saveCamp(){
+  CAMP={activas:+document.getElementById('c_a').value||0,planificadas:+document.getElementById('c_p').value||0,
+        completadas:+document.getElementById('c_c').value||0,pausadas:+document.getElementById('c_u').value||0};
+  closeModal(); saveData(); renderCX();
+}
+
+function openTrendModal(){
+  document.getElementById('modalInner').innerHTML=`
+    <div class="mt">Agregar mes a tendencia de usuarios</div>
+    <div class="msub">Añade el dato mensual de usuarios activos totales del grupo</div>
+    <div class="fgrid">
+      <div><div class="fl">Mes (etiqueta)</div><input class="fi" id="t_m" placeholder="Ej: May"></div>
+      <div><div class="fl">Usuarios activos totales</div><input class="fi" id="t_v" type="number" placeholder="Ej: 97000" min="0"></div>
+    </div>
+    <div class="mac">
+      <button class="bc" onclick="closeModal()">Cancelar</button>
+      <button class="bs" onclick="saveTrend()">Agregar</button>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function saveTrend(){
+  const mes=document.getElementById('t_m').value.trim(), activos=+document.getElementById('t_v').value||0;
+  if(mes) TREND.push({mes,activos});
+  closeModal(); saveData(); renderCX();
+}
+
+function openDailyModal(){
+  const today=new Date().toISOString().slice(0,10);
+  document.getElementById('modalInner').innerHTML=`
+    <div class="mt">Nuevo registro diario</div>
+    <div class="msub">Ingresa una métrica puntual del día</div>
+    <div class="fgrid full"><div class="fl">Fecha</div><input class="fi" id="d_f" type="date" value="${today}"></div>
+    <div class="fgrid">
+      <div><div class="fl">Marca</div><select class="fi" id="d_m">${BRANDS_CX.map(b=>`<option>${b}</option>`).join('')}</select></div>
+      <div><div class="fl">Métrica</div><select class="fi" id="d_k">${METRICS_LIST.map(m=>`<option>${m}</option>`).join('')}</select></div>
+    </div>
+    <div class="fgrid">
+      <div><div class="fl">Valor</div><input class="fi" id="d_v" placeholder="Ej: 142 ó 85%"></div>
+      <div><div class="fl">Nota (opcional)</div><input class="fi" id="d_n" placeholder="Contexto adicional"></div>
+    </div>
+    <div class="mac">
+      <button class="bc" onclick="closeModal()">Cancelar</button>
+      <button class="bs" onclick="saveDaily()">Guardar</button>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function saveDaily(){
+  DAILY.push({id:nextDailyId++,fecha:document.getElementById('d_f').value,marca:document.getElementById('d_m').value,
+    metrica:document.getElementById('d_k').value,valor:document.getElementById('d_v').value,nota:document.getElementById('d_n').value});
+  closeModal(); saveData(); renderDaily();
+}
+function delDaily(id){
+  if(!confirm('¿Eliminar este registro?')) return;
+  DAILY=DAILY.filter(r=>r.id!==id); saveData(); renderDaily();
+}
+
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show');}
+document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+renderCX();
+</script>
+</body>
+</html>

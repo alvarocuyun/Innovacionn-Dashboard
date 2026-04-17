@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BIA Restaurants · Dashboards 2026</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#f1f5f9;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px}
+
+  .page{width:100%;max-width:780px}
+
+  .top{text-align:center;margin-bottom:48px}
+  .brand-mark{display:inline-flex;align-items:center;gap:12px;margin-bottom:20px}
+  .brand-icon{width:48px;height:48px;background:#0F2240;border-radius:10px;display:flex;align-items:center;justify-content:center}
+  .brand-icon svg{width:28px;height:28px}
+  .brand-name{font-size:22px;font-weight:700;color:#0F2240;letter-spacing:.3px}
+  .brand-sub{font-size:13px;color:#94a3b8;font-weight:400}
+
+  .page-title{font-size:32px;font-weight:700;color:#0F2240;margin-bottom:8px;line-height:1.2}
+  .page-sub{font-size:15px;color:#64748b;line-height:1.6}
+
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px}
+  @media(max-width:560px){.cards{grid-template-columns:1fr}}
+
+  .card{background:#fff;border-radius:16px;border:1px solid #e2e8f0;padding:28px 24px;text-decoration:none;display:flex;flex-direction:column;gap:0;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden}
+  .card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.10)}
+
+  .card-accent{position:absolute;top:0;left:0;right:0;height:4px;border-radius:16px 16px 0 0}
+  .card-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;flex-shrink:0}
+  .card-icon svg{width:26px;height:26px}
+  .card-tag{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+  .card-title{font-size:19px;font-weight:700;color:#0a0a0a;margin-bottom:8px;line-height:1.25}
+  .card-desc{font-size:13px;color:#64748b;line-height:1.6;flex:1}
+  .card-metrics{display:flex;flex-wrap:wrap;gap:6px;margin-top:18px}
+  .metric-pill{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px}
+  .card-cta{display:inline-flex;align-items:center;gap:6px;margin-top:20px;font-size:13px;font-weight:700;padding:10px 18px;border-radius:8px;transition:opacity .15s}
+  .card-cta:hover{opacity:.85}
+  .arrow{font-size:14px;transition:transform .15s}
+  .card:hover .arrow{transform:translateX(3px)}
+
+  .footer-note{text-align:center;font-size:12px;color:#94a3b8;margin-top:8px}
+  .footer-note a{color:#64748b;text-decoration:none}
+  .dot{width:6px;height:6px;border-radius:50%;background:#22c55e;display:inline-block;margin-right:5px;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="top">
+    <div class="brand-mark">
+      <div class="brand-icon">
+        <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="7" width="22" height="3" rx="1.5" fill="#00A896"/>
+          <rect x="3" y="13" width="16" height="3" rx="1.5" fill="#fff" opacity=".7"/>
+          <rect x="3" y="19" width="10" height="3" rx="1.5" fill="#fff" opacity=".4"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">BIA Restaurants</div>
+        <div class="brand-sub">Marketing Hub</div>
+      </div>
+    </div>
+    <div class="page-title">Dashboards 2026</div>
+    <div class="page-sub">Selecciona el dashboard que deseas consultar o actualizar</div>
+  </div>
+
+  <div class="cards">
+
+    <!-- R&D Card -->
+    <a class="card" href="dashboard_rd_innovacion.html">
+      <div class="card-accent" style="background:#0F4C81"></div>
+      <div class="card-icon" style="background:#EFF6FF">
+        <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="13" cy="10" r="5" stroke="#0F4C81" stroke-width="2"/>
+          <path d="M8 10c0-2.76 2.24-5 5-5" stroke="#0F4C81" stroke-width="2" stroke-linecap="round"/>
+          <path d="M9 17h8M10 20h6" stroke="#0F4C81" stroke-width="2" stroke-linecap="round"/>
+          <path d="M13 15v2" stroke="#0F4C81" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="card-tag" style="color:#0F4C81">Innovación · R&D</div>
+      <div class="card-title">Dashboard de Proyectos</div>
+      <div class="card-desc">Avance por proyecto vs plan, proyectos atrasados, tiempo de desarrollo, retrabajos y ficha técnica. Filtrable por marca.</div>
+      <div class="card-metrics">
+        <span class="metric-pill" style="background:#EFF6FF;color:#1e40af">% Avance vs Plan</span>
+        <span class="metric-pill" style="background:#FEF2F2;color:#991b1b">Proyectos atrasados</span>
+        <span class="metric-pill" style="background:#F0FDF4;color:#166534">Ficha técnica</span>
+        <span class="metric-pill" style="background:#FFFBEB;color:#92400e">Retrabajos</span>
+      </div>
+      <div class="card-cta" style="background:#0F4C81;color:#fff">
+        Abrir dashboard <span class="arrow">→</span>
+      </div>
+    </a>
+
+    <!-- CX & Loyalty Card -->
+    <a class="card" href="dashboard_cx_loyalty.html">
+      <div class="card-accent" style="background:#0F6E56"></div>
+      <div class="card-icon" style="background:#F0FDF9">
+        <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 4l2.09 6.43H22l-5.45 3.96 2.09 6.43L13 16.86l-5.64 4.1 2.09-6.57L4 10.43h6.91L13 4z" stroke="#0F6E56" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="card-tag" style="color:#0F6E56">Customer Experience · Loyalty</div>
+      <div class="card-title">Dashboard de KPIs</div>
+      <div class="card-desc">NPS por marca, retención, frecuencia, tasa de redención, adopción operacional y registro diario de métricas de lealtad.</div>
+      <div class="card-metrics">
+        <span class="metric-pill" style="background:#F0FDF9;color:#065f46">NPS</span>
+        <span class="metric-pill" style="background:#EDE9FE;color:#5b21b6">Retención</span>
+        <span class="metric-pill" style="background:#FFFBEB;color:#92400e">Tasa redención</span>
+        <span class="metric-pill" style="background:#EFF6FF;color:#1e40af">Adopción CX</span>
+      </div>
+      <div class="card-cta" style="background:#0F6E56;color:#fff">
+        Abrir dashboard <span class="arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="footer-note">
+    <span class="dot"></span>Los datos se guardan automáticamente en cada dispositivo ·
+    BIA Restaurants 2026
+  </div>
+
+</div>
+
+</body>
+</html>
