@@ -182,7 +182,7 @@ function saveData() {
 }
 
 function resetData() {
-  if (!confirm('¿Limpiar todos los datos y volver a los datos de ejemplo?')) return;
+  showResetConfirm(); return;
   localStorage.removeItem(STORAGE_KEY);
   const d = loadData(); RD = d.projects; nextId = d.nextId;
   renderRD();
@@ -370,9 +370,47 @@ function saveProj() {
 }
 
 function delProj(id) {
-  if (!confirm('¿Eliminar este proyecto?')) return;
-  RD = RD.filter(p=>p.id!==id);
-  closeModal(); saveData(); renderRD();
+  // Show confirm panel inside modal instead of browser confirm()
+  const inner = document.getElementById('modalInner');
+  const pname = (RD.find(p=>p.id===id)||{}).nombre || 'este proyecto';
+  // Save current modal html to restore on cancel
+  const prev = inner.innerHTML;
+  inner.innerHTML = `
+    <div style="text-align:center;padding:12px 0">
+      <div style="font-size:36px;margin-bottom:12px">🗑️</div>
+      <div style="font-size:15px;font-weight:700;color:#0a0a0a;margin-bottom:6px">¿Eliminar proyecto?</div>
+      <div style="font-size:13px;color:#64748b;margin-bottom:20px">"${pname}"<br>Esta acción no se puede deshacer.</div>
+      <div style="display:flex;justify-content:center;gap:10px">
+        <button onclick="document.getElementById('modalInner').innerHTML=arguments[0]" style="display:none"></button>
+        <button id="cancelDelBtn" style="font-size:13px;padding:8px 20px;border-radius:7px;border:1px solid #e2e8f0;background:none;color:#64748b;cursor:pointer">Cancelar</button>
+        <button id="confirmDelBtn" style="font-size:13px;padding:8px 20px;border-radius:7px;border:none;background:#dc2626;color:#fff;cursor:pointer;font-weight:700">Sí, eliminar</button>
+      </div>
+    </div>`;
+  document.getElementById('cancelDelBtn').onclick = () => { inner.innerHTML = prev; };
+  document.getElementById('confirmDelBtn').onclick = () => {
+    RD = RD.filter(p=>p.id!==id);
+    closeModal(); saveData(); renderRD();
+  };
+}
+
+function showResetConfirm() {
+  document.getElementById('modalInner').innerHTML = `
+    <div style="text-align:center;padding:12px 0">
+      <div style="font-size:36px;margin-bottom:12px">⚠️</div>
+      <div style="font-size:15px;font-weight:700;color:#0a0a0a;margin-bottom:6px">¿Limpiar todos los datos?</div>
+      <div style="font-size:13px;color:#64748b;margin-bottom:20px">Se restaurarán los datos de ejemplo.<br>Esta acción no se puede deshacer.</div>
+      <div style="display:flex;justify-content:center;gap:10px">
+        <button id="cancelResetBtn" style="font-size:13px;padding:8px 20px;border-radius:7px;border:1px solid #e2e8f0;background:none;color:#64748b;cursor:pointer">Cancelar</button>
+        <button id="confirmResetBtn" style="font-size:13px;padding:8px 20px;border-radius:7px;border:none;background:#dc2626;color:#fff;cursor:pointer;font-weight:700">Sí, limpiar</button>
+      </div>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('show');
+  document.getElementById('cancelResetBtn').onclick = () => closeModal();
+  document.getElementById('confirmResetBtn').onclick = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    const d = loadData(); RD = d.projects; nextId = d.nextId;
+    closeModal(); renderRD();
+  };
 }
 
 document.getElementById('modalOverlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeModal(); });
