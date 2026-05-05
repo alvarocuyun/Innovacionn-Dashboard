@@ -150,6 +150,7 @@
 const SHEET_ID   = '1I4eoSooRrPouO5vDX6CAOVmL-u_Unbq6S3TEcIIQVDA';
 const SHEET_NAME = 'Proyectos R&D';
 const SHEET_URL  = 'https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/edit';
+const CSV_URL    = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpbvfAqhP0IGxjkKjgiJnl4LwEhzQGhLtw0ttfSRjw_eJbtDcUeHf1bvMLoexxwQJ_fhYiG-td6bO4/pub?gid=1024885008&single=true&output=csv';
 
 const BRANDS = ["Applebee's",'Panda Express Guatemala','Panda Express El Salvador','Café Barista Guatemala','Café Barista El Salvador','Punta del Cielo'];
 const ESTADOS = ['En tiempo','Con retraso','En pausa','Completado'];
@@ -170,8 +171,7 @@ function setBadge(state, msg) {
 
 async function loadSheet() {
   setBadge('loading', 'Cargando...');
-  const url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID +
-              '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent(SHEET_NAME);
+  const url = CSV_URL;
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error('HTTP ' + res.status);
