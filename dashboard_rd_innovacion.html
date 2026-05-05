@@ -5,35 +5,65 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard R&D · BIA Restaurants 2026</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Segoe UI',Arial,sans-serif;background:#f8fafc;color:#0a0a0a;padding:24px}
   .db{max-width:1300px;margin:0 auto;background:#fff;border-radius:14px;padding:28px;border:1px solid #e2e8f0}
+
+  /* HEADER */
   .hdr{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:3px solid #0F4C81}
   .hdr-tag{font-size:11px;font-weight:700;color:#0F4C81;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
   .hdr-title{font-size:22px;font-weight:700;color:#0a0a0a}
   .hdr-sub{font-size:12px;color:#64748b;margin-top:2px}
   .hdr-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .sel{font-size:12px;padding:6px 11px;border-radius:7px;border:1px solid #cbd5e1;background:#fff;color:#0a0a0a;cursor:pointer}
+
+  /* UPLOAD ZONE */
+  .upload-zone{border:2px dashed #bfdbfe;border-radius:12px;padding:36px 24px;text-align:center;background:#f8fafc;cursor:pointer;transition:all .2s;margin-bottom:22px}
+  .upload-zone:hover,.upload-zone.drag{border-color:#0F4C81;background:#eff6ff}
+  .upload-zone.loaded{border-color:#bbf7d0;background:#f0fdf4;border-style:solid}
+  .upload-icon{font-size:40px;margin-bottom:10px}
+  .upload-title{font-size:15px;font-weight:700;color:#0a0a0a;margin-bottom:6px}
+  .upload-sub{font-size:12px;color:#64748b;line-height:1.6}
+  .upload-btn{display:inline-block;margin-top:14px;font-size:13px;font-weight:600;color:#fff;background:#0F4C81;padding:8px 20px;border-radius:8px;cursor:pointer;border:none}
+  .upload-btn:hover{background:#0c3d6a}
+  .file-info{font-size:12px;color:#16a34a;font-weight:600;margin-top:8px}
+
+  /* STATUS BADGE */
   .sync-badge{font-size:11px;padding:5px 12px;border-radius:20px;font-weight:600;display:flex;align-items:center;gap:5px;white-space:nowrap}
   .sync-ok{background:#dcfce7;color:#16a34a}
-  .sync-loading{background:#fef9c3;color:#854d0e}
+  .sync-wait{background:#f1f5f9;color:#64748b}
   .sync-err{background:#fee2e2;color:#991b1b}
-  .spin{display:inline-block;animation:spin .8s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .info-bar{background:#eff6ff;border:1px solid #bfdbfe;border-radius:9px;padding:11px 15px;margin-bottom:18px;display:flex;align-items:flex-start;gap:10px;font-size:12px;color:#1e40af;line-height:1.6}
-  .info-bar a{color:#1d4ed8;font-weight:700;text-decoration:none}
-  .info-bar a:hover{text-decoration:underline}
+
+  /* INSTRUCCIONES */
+  .how-bar{background:#eff6ff;border:1px solid #bfdbfe;border-radius:9px;padding:12px 16px;margin-bottom:20px;font-size:12px;color:#1e40af;line-height:1.7;display:none}
+  .how-bar b{color:#1e3a8a}
+  .how-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+  .how-step{background:#fff;border-radius:8px;padding:10px 12px;border:1px solid #bfdbfe}
+  .how-step-num{font-size:11px;font-weight:700;color:#0F4C81;margin-bottom:3px}
+  .how-step-txt{font-size:11px;color:#1e40af;line-height:1.5}
+
+  /* FILTERS */
+  .filter-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px;align-items:center}
+
+  /* KPI GRID */
   .kgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:22px}
   .kc{background:#f8fafc;border-radius:9px;padding:13px 11px;position:relative;overflow:hidden;border:1px solid #f1f5f9}
   .kc-acc{position:absolute;top:0;left:0;width:4px;height:100%}
   .kc-lbl{font-size:11px;color:#64748b;margin-bottom:5px;line-height:1.35;padding-left:8px}
   .kc-val{font-size:24px;font-weight:700;padding-left:8px}
   .kc-sub{font-size:10px;color:#94a3b8;margin-top:3px;padding-left:8px}
+
+  /* CHARTS */
   .sec-title{font-size:13px;font-weight:700;color:#0a0a0a;margin-bottom:11px}
   .charts-row{display:grid;grid-template-columns:1.7fr 1fr 1fr;gap:14px;margin-bottom:22px}
   .cbox{background:#fff;border:1px solid #e2e8f0;border-radius:11px;padding:15px}
-  .filter-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px;align-items:center}
+  .leg-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;font-size:11px;color:#64748b}
+  .leg-item{display:flex;align-items:center;gap:4px}
+  .leg-sq{width:10px;height:10px;border-radius:2px;display:inline-block}
+
+  /* TABLE */
   .proj-box{background:#fff;border:1px solid #e2e8f0;border-radius:11px;padding:15px;margin-bottom:14px}
   .proj-hdr-row{display:grid;grid-template-columns:1.8fr .95fr .72fr .6fr .6fr .65fr .95fr;gap:7px;padding:7px 9px;background:#f1f5f9;border-radius:7px;margin-bottom:7px}
   .ph{font-size:10px;font-weight:700;color:#64748b;text-align:center}
@@ -50,30 +80,27 @@
   .prog-num{font-size:10px;font-weight:600;min-width:28px;text-align:right}
   .cell-c{font-size:11px;text-align:center;color:#0a0a0a}
   .search-input{font-size:12px;padding:5px 11px;border:1px solid #e2e8f0;border-radius:7px;background:#f8fafc;color:#0a0a0a;width:200px}
-  .sheet-btn{font-size:12px;font-weight:600;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:6px 14px;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
-  .sheet-btn:hover{background:#dbeafe}
-  .reload-btn{font-size:12px;font-weight:600;color:#16a34a;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;padding:6px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
-  .reload-btn:hover{background:#dcfce7}
-  .empty-state{text-align:center;padding:44px 20px;color:#94a3b8}
-  .empty-big{font-size:36px;margin-bottom:12px}
+
+  /* EMPTY */
+  .empty-state{text-align:center;padding:44px 20px}
+  .empty-big{font-size:38px;margin-bottom:12px}
   .empty-state p{font-size:13px;line-height:1.8;color:#64748b}
-  .leg-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;font-size:11px;color:#64748b}
-  .leg-item{display:flex;align-items:center;gap:4px}
-  .leg-sq{width:10px;height:10px;border-radius:2px;display:inline-block}
+
   footer{text-align:center;font-size:11px;color:#94a3b8;margin-top:18px;padding-top:14px;border-top:1px solid #f1f5f9}
 </style>
 </head>
 <body>
 <div class="db">
 
+  <!-- HEADER -->
   <div class="hdr">
     <div>
       <div class="hdr-tag">R&amp;D · Innovación · BIA Restaurants</div>
       <div class="hdr-title">Dashboard de Proyectos 2026</div>
-      <div class="hdr-sub">Datos en tiempo real desde Google Sheets</div>
+      <div class="hdr-sub" id="hdrSub">Carga el archivo Excel o CSV para comenzar</div>
     </div>
     <div class="hdr-right">
-      <span class="sync-badge sync-loading" id="syncBadge"><span class="spin">↻</span>&nbsp;Cargando...</span>
+      <span class="sync-badge sync-wait" id="syncBadge">⬆ Sin archivo</span>
       <select class="sel" id="rdMonth" onchange="renderRD()">
         <option>Enero</option><option>Febrero</option><option>Marzo</option>
         <option selected>Abril</option><option>Mayo</option><option>Junio</option>
@@ -81,26 +108,44 @@
         <option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
       </select>
       <select class="sel" id="rdYear"><option>2026</option><option>2027</option></select>
-      <button class="reload-btn" onclick="loadSheet()"><span>↻</span> Actualizar datos</button>
     </div>
   </div>
 
-  <div class="info-bar">
-    <span style="font-size:18px;line-height:1">📋</span>
-    <div>
-      Los datos se ingresan en
-      <a href="https://docs.google.com/spreadsheets/d/1I4eoSooRrPouO5vDX6CAOVmL-u_Unbq6S3TEcIIQVDA/edit" target="_blank">BIA Dashboards 2026</a>
-      → pestaña <b>"Proyectos R&amp;D"</b>.
-      Respeta los encabezados de la primera fila. Después de guardar cambios en el Sheet, haz clic en <b>↻ Actualizar datos</b> para reflejarlos aquí.
+  <!-- UPLOAD ZONE -->
+  <div class="upload-zone" id="uploadZone"
+       ondragover="event.preventDefault();this.classList.add('drag')"
+       ondragleave="this.classList.remove('drag')"
+       ondrop="handleDrop(event)">
+    <div class="upload-icon" id="uploadIcon">📂</div>
+    <div class="upload-title" id="uploadTitle">Cargar datos desde Excel o CSV</div>
+    <div class="upload-sub" id="uploadSub">
+      Exporta la pestaña <b>"Proyectos R&D"</b> de Google Sheets como <b>Excel (.xlsx)</b> o <b>CSV (.csv)</b><br>
+      y suéltalo aquí, o haz clic para seleccionar el archivo.
+    </div>
+    <button class="upload-btn" onclick="document.getElementById('fileInput').click()">Seleccionar archivo</button>
+    <div class="file-info" id="fileInfo"></div>
+    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleFile(this.files[0])">
+  </div>
+
+  <!-- HOW TO -->
+  <div class="how-bar" id="howBar">
+    <b>¿Cómo actualizar los datos?</b> Sigue estos 3 pasos cada vez que quieras refrescar el dashboard:
+    <div class="how-steps">
+      <div class="how-step"><div class="how-step-num">Paso 1</div><div class="how-step-txt">Abre el Google Sheet y actualiza los datos en la pestaña <b>Proyectos R&D</b></div></div>
+      <div class="how-step"><div class="how-step-num">Paso 2</div><div class="how-step-txt">Ve a <b>Archivo → Descargar → CSV</b> o <b>Excel (.xlsx)</b></div></div>
+      <div class="how-step"><div class="how-step-num">Paso 3</div><div class="how-step-txt">Arrastra el archivo descargado al área de carga arriba</div></div>
     </div>
   </div>
 
-  <div class="filter-row" id="brandFilters">
+  <!-- FILTERS -->
+  <div class="filter-row" id="brandFilters" style="display:none">
     <span style="font-size:11px;font-weight:700;color:#64748b;margin-right:2px;white-space:nowrap">Filtrar por marca:</span>
   </div>
 
+  <!-- KPIS -->
   <div class="kgrid" id="rdKpis"></div>
 
+  <!-- CHARTS -->
   <div class="charts-row">
     <div class="cbox">
       <div class="sec-title">Avance real vs plan por proyecto</div>
@@ -121,15 +166,11 @@
     </div>
   </div>
 
+  <!-- TABLE -->
   <div class="proj-box">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
       <div class="sec-title" style="margin:0">Proyectos vigentes</div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <input class="search-input" type="text" placeholder="Buscar proyecto o marca..." id="rdSearch" oninput="renderRows()">
-        <a class="sheet-btn" href="https://docs.google.com/spreadsheets/d/1I4eoSooRrPouO5vDX6CAOVmL-u_Unbq6S3TEcIIQVDA/edit" target="_blank">
-          ✎ Abrir Google Sheet
-        </a>
-      </div>
+      <input class="search-input" type="text" placeholder="Buscar proyecto o marca..." id="rdSearch" oninput="renderRows()">
     </div>
     <div class="proj-hdr-row">
       <div class="ph">Proyecto / Marca</div>
@@ -140,18 +181,18 @@
       <div class="ph">Retrabajos</div>
       <div class="ph">Ficha técnica</div>
     </div>
-    <div id="rdRows"></div>
+    <div id="rdRows">
+      <div class="empty-state">
+        <div class="empty-big">📂</div>
+        <p>Carga un archivo Excel o CSV arriba para ver los proyectos.</p>
+      </div>
+    </div>
   </div>
 
 </div>
-<footer>Dashboard R&amp;D · BIA Restaurants 2026 · Sincronizado desde Google Sheets</footer>
+<footer>Dashboard R&amp;D · BIA Restaurants 2026 · Datos cargados desde archivo local</footer>
 
 <script>
-const SHEET_ID   = '1I4eoSooRrPouO5vDX6CAOVmL-u_Unbq6S3TEcIIQVDA';
-const SHEET_NAME = 'Proyectos R&D';
-const SHEET_URL  = 'https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/edit';
-const CSV_URL    = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpbvfAqhP0IGxjkKjgiJnl4LwEhzQGhLtw0ttfSRjw_eJbtDcUeHf1bvMLoexxwQJ_fhYiG-td6bO4/pub?gid=1024885008&single=true&output=csv';
-
 const BRANDS = ["Applebee's",'Panda Express Guatemala','Panda Express El Salvador','Café Barista Guatemala','Café Barista El Salvador','Punta del Cielo'];
 const ESTADOS = ['En tiempo','Con retraso','En pausa','Completado'];
 const E_BG = {'En tiempo':'#dcfce7','Con retraso':'#fee2e2','En pausa':'#f1f5f9','Completado':'#dbeafe'};
@@ -162,58 +203,75 @@ let RD = [];
 let activeBrandFilter = 'Todas';
 let charts = {};
 
-function setBadge(state, msg) {
-  const b = document.getElementById('syncBadge');
-  b.className = 'sync-badge sync-' + state;
-  const icon = state === 'loading' ? '<span class="spin">↻</span>&nbsp;' : state === 'ok' ? '✓ ' : '⚠ ';
-  b.innerHTML = icon + msg;
+// ── FILE HANDLING ─────────────────────────────────────────────
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
 }
 
-async function loadSheet() {
-  setBadge('loading', 'Cargando...');
+function handleFile(file) {
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  const reader = new FileReader();
 
-  // Multiple proxy attempts to bypass CORS
-  const proxies = [
-    'https://corsproxy.io/?' + encodeURIComponent(CSV_URL),
-    'https://api.allorigins.win/raw?url=' + encodeURIComponent(CSV_URL),
-    'https://thingproxy.freeboard.io/fetch/' + CSV_URL,
-  ];
-
-  let csv = null;
-  for (const url of proxies) {
+  reader.onload = function(e) {
     try {
-      const res = await fetch(url, {signal: AbortSignal.timeout(8000)});
-      if (!res.ok) continue;
-      const text = await res.text();
-      if (text && text.length > 10 && !text.startsWith('<')) {
-        csv = text;
-        break;
+      let rows = [];
+      if (ext === 'csv') {
+        rows = parseCSV(e.target.result);
+      } else {
+        const wb = XLSX.read(e.target.result, {type:'binary'});
+        // Try to find "Proyectos R&D" sheet, else use first sheet
+        const sheetName = wb.SheetNames.find(n => n.toLowerCase().includes('r&d') || n.toLowerCase().includes('rd') || n.toLowerCase().includes('proy'))
+                          || wb.SheetNames[0];
+        const ws = wb.Sheets[sheetName];
+        const data = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+        rows = parseRows(data);
       }
-    } catch(e) { continue; }
-  }
 
-  if (!csv) {
-    setBadge('err', 'Sin acceso al Sheet');
-    document.getElementById('rdRows').innerHTML = `
-      <div class="empty-state">
-        <div class="empty-big">⚠️</div>
-        <p><b>No se pudo leer el Google Sheet.</b><br><br>
-        Verifica que en Google Sheets hayas ido a<br>
-        <b>Archivo → Compartir → Publicar en la web</b><br>
-        y que la pestaña <b>Proyectos R&amp;D</b> esté publicada como <b>CSV</b>.<br><br>
-        Luego haz clic en <b>↻ Actualizar datos</b>.</p>
-      </div>`;
-    renderKpis();
-    return;
-  }
+      if (rows.length === 0) {
+        showUploadError('El archivo no tiene datos. Verifica que tenga la estructura correcta.');
+        return;
+      }
 
-  RD = parseCSV(csv);
-  const t = new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'});
-  setBadge('ok', 'Actualizado ' + t + ' · ' + RD.length + ' proyectos');
-  renderBrandPills();
-  renderRD();
+      RD = rows;
+      showUploadSuccess(file.name, rows.length);
+      renderBrandPills();
+      renderRD();
+    } catch(err) {
+      showUploadError('Error al leer el archivo: ' + err.message);
+      console.error(err);
+    }
+  };
+
+  if (ext === 'csv') reader.readAsText(file, 'UTF-8');
+  else reader.readAsBinaryString(file);
 }
 
+function showUploadSuccess(fname, count) {
+  const z = document.getElementById('uploadZone');
+  z.classList.add('loaded');
+  document.getElementById('uploadIcon').textContent = '✅';
+  document.getElementById('uploadTitle').textContent = 'Archivo cargado correctamente';
+  document.getElementById('uploadSub').innerHTML = 'Para actualizar los datos, descarga el archivo actualizado desde Google Sheets y suéltalo aquí de nuevo.';
+  document.getElementById('fileInfo').textContent = fname + ' · ' + count + ' proyectos encontrados';
+  document.getElementById('syncBadge').className = 'sync-badge sync-ok';
+  document.getElementById('syncBadge').textContent = '✓ ' + count + ' proyectos · ' + new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('hdrSub').textContent = 'Datos cargados desde ' + fname;
+  document.getElementById('howBar').style.display = 'block';
+  document.getElementById('brandFilters').style.display = 'flex';
+}
+
+function showUploadError(msg) {
+  document.getElementById('syncBadge').className = 'sync-badge sync-err';
+  document.getElementById('syncBadge').textContent = '⚠ Error al cargar';
+  document.getElementById('fileInfo').style.color = '#dc2626';
+  document.getElementById('fileInfo').textContent = msg;
+}
+
+// ── CSV PARSER ────────────────────────────────────────────────
 function parseCSVLine(line) {
   const r = []; let cur = '', q = false;
   for (let i = 0; i < line.length; i++) {
@@ -222,23 +280,34 @@ function parseCSVLine(line) {
     else if (c === ',' && !q) { r.push(cur); cur = ''; }
     else { cur += c; }
   }
-  r.push(cur);
-  return r;
+  r.push(cur); return r;
 }
-
-function clean(s) { return s ? s.replace(/^"|"$/g,'').trim() : ''; }
+function clean(s) { return s !== undefined && s !== null ? String(s).replace(/^"|"$/g,'').trim() : ''; }
 function num(s)   { const n = parseFloat(clean(s)); return isNaN(n) ? 0 : n; }
 
 function parseCSV(csv) {
   const lines = csv.trim().split('\n');
   if (lines.length < 2) return [];
+  const data = lines.map(l => parseCSVLine(l));
+  return parseRows(data);
+}
+
+function parseRows(data) {
+  // Find header row (look for "nombre" or "proyecto" in any row)
+  let startRow = 1;
+  for (let i = 0; i < Math.min(5, data.length); i++) {
+    const row = data[i].map(c => clean(c).toLowerCase());
+    if (row.some(c => c.includes('nombre') || c.includes('proyecto'))) {
+      startRow = i + 1; break;
+    }
+  }
   const rows = [];
-  for (let i = 1; i < lines.length; i++) {
-    const c = parseCSVLine(lines[i]);
+  for (let i = startRow; i < data.length; i++) {
+    const c = data[i];
     const nombre = clean(c[1]);
     if (!nombre) continue;
     rows.push({
-      id:         i,
+      id: i,
       nombre,
       marca:      clean(c[2]),
       estado:     clean(c[3]) || 'En tiempo',
@@ -252,6 +321,7 @@ function parseCSV(csv) {
   return rows;
 }
 
+// ── FILTERS ───────────────────────────────────────────────────
 function filteredRD() {
   return activeBrandFilter === 'Todas' ? RD : RD.filter(p => p.marca === activeBrandFilter);
 }
@@ -267,15 +337,16 @@ function renderBrandPills() {
     btn.textContent = b === 'Todas' ? 'Todas las marcas' : b;
     btn.style.cssText = 'font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;border:1.5px solid;cursor:pointer;transition:all .15s;white-space:nowrap;'
       + 'background:' + (active ? color : '#fff') + ';'
-      + 'color:' + (active ? '#fff' : '#475569') + ';'
+      + 'color:'      + (active ? '#fff' : '#475569') + ';'
       + 'border-color:' + (active ? color : '#e2e8f0');
     btn.onclick = () => { activeBrandFilter = b; renderBrandPills(); renderRD(); };
     wrap.appendChild(btn);
   });
 }
 
+// ── KPIS ──────────────────────────────────────────────────────
 function renderKpis() {
-  const src = filteredRD();
+  const src     = filteredRD();
   const active  = src.filter(p => p.estado !== 'Completado');
   const late    = src.filter(p => p.estado === 'Con retraso');
   const done    = src.filter(p => p.estado === 'Completado');
@@ -283,12 +354,12 @@ function renderKpis() {
   const totalRt = src.reduce((s,p)=>s+p.retrabajos, 0);
   const avgFich = src.length ? Math.round(src.reduce((s,p)=>s+p.ficha,0)/src.length) : 0;
   const kpis = [
-    {lbl:'Proyectos vigentes',      val:active.length, sub:src.length+' en total',    acc:'#0F4C81'},
-    {lbl:'Proyectos atrasados',     val:late.length,   sub:'requieren atención',       acc:'#dc2626'},
-    {lbl:'Completados',             val:done.length,   sub:'este período',             acc:'#16a34a'},
-    {lbl:'Tiempo prom. desarrollo', val:avgDias+'d',   sub:'promedio general',         acc:'#7c3aed'},
-    {lbl:'Retrabajos totales',      val:totalRt,       sub:'ajustes acumulados',       acc:'#d97706'},
-    {lbl:'Ficha técnica prom.',     val:avgFich+'%',   sub:'completitud promedio',     acc:'#0891b2'},
+    {lbl:'Proyectos vigentes',      val:active.length, sub:src.length+' en total',  acc:'#0F4C81'},
+    {lbl:'Proyectos atrasados',     val:late.length,   sub:'requieren atención',     acc:'#dc2626'},
+    {lbl:'Completados',             val:done.length,   sub:'este período',           acc:'#16a34a'},
+    {lbl:'Tiempo prom. desarrollo', val:avgDias+'d',   sub:'promedio general',       acc:'#7c3aed'},
+    {lbl:'Retrabajos totales',      val:totalRt,       sub:'ajustes acumulados',     acc:'#d97706'},
+    {lbl:'Ficha técnica prom.',     val:avgFich+'%',   sub:'completitud promedio',   acc:'#0891b2'},
   ];
   document.getElementById('rdKpis').innerHTML = kpis.map(k =>
     '<div class="kc"><div class="kc-acc" style="background:'+k.acc+'"></div>'
@@ -298,6 +369,7 @@ function renderKpis() {
   ).join('');
 }
 
+// ── CHARTS ────────────────────────────────────────────────────
 function renderCharts() {
   Object.values(charts).forEach(c => { try{c.destroy();}catch(e){} });
   charts = {};
@@ -320,7 +392,7 @@ function renderCharts() {
     });
   }
 
-  const stC = {}; ESTADOS.forEach(s=>stC[s]=src.filter(p=>p.estado===s).length);
+  const stC = {}; ESTADOS.forEach(s => stC[s] = src.filter(p=>p.estado===s).length);
   const stColors = ['#16a34a','#dc2626','#94a3b8','#2563eb'];
   charts.c2 = new Chart(document.getElementById('c2'), {
     type:'doughnut',
@@ -345,15 +417,15 @@ function renderCharts() {
   }
 }
 
+// ── ROWS ──────────────────────────────────────────────────────
 function renderRows() {
-  const q = (document.getElementById('rdSearch').value||'').toLowerCase();
+  const q    = (document.getElementById('rdSearch').value||'').toLowerCase();
   const list = filteredRD().filter(p=>!q||p.nombre.toLowerCase().includes(q)||p.marca.toLowerCase().includes(q));
   if (!list.length) {
     document.getElementById('rdRows').innerHTML =
-      '<div class="empty-state"><div class="empty-big">'+(RD.length===0?'📋':'📭')+'</div><p>'
-      +(RD.length===0
-        ? 'El Sheet aún no tiene datos.<br>Agrega filas en la pestaña <b>Proyectos R&amp;D</b> y presiona <b>↻ Actualizar datos</b>.'
-        : 'Ningún proyecto coincide con la búsqueda.')
+      '<div class="empty-state"><div class="empty-big">'+(RD.length===0?'📂':'📭')+'</div><p>'
+      +(RD.length===0 ? 'Carga un archivo Excel o CSV arriba para ver los proyectos.'
+                      : 'Ningún proyecto coincide con la búsqueda.')
       +'</p></div>';
     return;
   }
@@ -373,10 +445,7 @@ function renderRows() {
 }
 
 function renderRD() { renderKpis(); renderCharts(); renderRows(); }
-
 document.getElementById('rdSearch').addEventListener('input', renderRows);
-renderBrandPills();
-loadSheet();
 </script>
 </body>
 </html>
