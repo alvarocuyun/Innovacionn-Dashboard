@@ -171,30 +171,47 @@ function setBadge(state, msg) {
 
 async function loadSheet() {
   setBadge('loading', 'Cargando...');
-  const url = CSV_URL;
-  try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const csv = await res.text();
-    RD = parseCSV(csv);
-    const t = new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'});
-    setBadge('ok', 'Actualizado ' + t + ' · ' + RD.length + ' proyectos');
-    renderBrandPills();
-    renderRD();
-  } catch(e) {
+
+  // Multiple proxy attempts to bypass CORS
+  const proxies = [
+    'https://corsproxy.io/?' + encodeURIComponent(CSV_URL),
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(CSV_URL),
+    'https://thingproxy.freeboard.io/fetch/' + CSV_URL,
+  ];
+
+  let csv = null;
+  for (const url of proxies) {
+    try {
+      const res = await fetch(url, {signal: AbortSignal.timeout(8000)});
+      if (!res.ok) continue;
+      const text = await res.text();
+      if (text && text.length > 10 && !text.startsWith('<')) {
+        csv = text;
+        break;
+      }
+    } catch(e) { continue; }
+  }
+
+  if (!csv) {
     setBadge('err', 'Sin acceso al Sheet');
-    console.error(e);
     document.getElementById('rdRows').innerHTML = `
       <div class="empty-state">
         <div class="empty-big">⚠️</div>
         <p><b>No se pudo leer el Google Sheet.</b><br><br>
-        Verifica que:<br>
-        1. La pestaña se llame exactamente <b>Proyectos R&amp;D</b><br>
-        2. El acceso esté en <b>BIA Restaurants Hub → cualquiera con el enlace</b><br><br>
+        Verifica que en Google Sheets hayas ido a<br>
+        <b>Archivo → Compartir → Publicar en la web</b><br>
+        y que la pestaña <b>Proyectos R&amp;D</b> esté publicada como <b>CSV</b>.<br><br>
         Luego haz clic en <b>↻ Actualizar datos</b>.</p>
       </div>`;
     renderKpis();
+    return;
   }
+
+  RD = parseCSV(csv);
+  const t = new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'});
+  setBadge('ok', 'Actualizado ' + t + ' · ' + RD.length + ' proyectos');
+  renderBrandPills();
+  renderRD();
 }
 
 function parseCSVLine(line) {
